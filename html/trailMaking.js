@@ -43,13 +43,35 @@ flowScheduler.add(experimentInit);
 flowScheduler.add(setupRoutineBegin());
 flowScheduler.add(setupRoutineEachFrame());
 flowScheduler.add(setupRoutineEnd());
+// Welcome screen
+flowScheduler.add(setInstrText(0));
 flowScheduler.add(instructionsRoutineBegin());
 flowScheduler.add(instructionsRoutineEachFrame());
 flowScheduler.add(instructionsRoutineEnd());
-const trialsLoopScheduler = new Scheduler(psychoJS);
-flowScheduler.add(trialsLoopBegin, trialsLoopScheduler);
-flowScheduler.add(trialsLoopScheduler);
-flowScheduler.add(trialsLoopEnd);
+// Part A instructions
+flowScheduler.add(setInstrText(1));
+flowScheduler.add(instructionsRoutineBegin());
+flowScheduler.add(instructionsRoutineEachFrame());
+flowScheduler.add(instructionsRoutineEnd());
+// Part A trials (2 repetitions)
+const trialsPartALoopScheduler = new Scheduler(psychoJS);
+flowScheduler.add(trialsPartALoopBegin, trialsPartALoopScheduler);
+flowScheduler.add(trialsPartALoopScheduler);
+flowScheduler.add(trialsPartALoopEnd);
+// Part B instructions
+flowScheduler.add(setInstrText(2));
+flowScheduler.add(instructionsRoutineBegin());
+flowScheduler.add(instructionsRoutineEachFrame());
+flowScheduler.add(instructionsRoutineEnd());
+// Part B trials (3 repetitions)
+const trialsPartBLoopScheduler = new Scheduler(psychoJS);
+flowScheduler.add(trialsPartBLoopBegin, trialsPartBLoopScheduler);
+flowScheduler.add(trialsPartBLoopScheduler);
+flowScheduler.add(trialsPartBLoopEnd);
+// End screen
+flowScheduler.add(endScreenRoutineBegin());
+flowScheduler.add(endScreenRoutineEachFrame());
+flowScheduler.add(endScreenRoutineEnd());
 flowScheduler.add(quitPsychoJS, '', true);
 
 // quit if user presses Cancel in dialog box:
@@ -105,6 +127,22 @@ var round;
 var key_resp_2;
 var globalClock;
 var routineTimer;
+var currentPart;
+var partLoopCounter;
+var endScreenClock;
+var endText;
+var key_resp_end;
+var trialsPartA;
+var trialsPartB;
+var PART_A_TRIALS = 2;
+var PART_B_TRIALS = 3;
+
+function setInstrText(rowIdx) {
+  return function() {
+    instr_text.text = myText.trialList[rowIdx][whichText];
+    return Scheduler.Event.NEXT;
+  };
+}
 function experimentInit() {
   // Initialize components for Routine "setup"
   setupClock = new util.Clock();
@@ -142,7 +180,7 @@ function experimentInit() {
     text: myText.trialList[0][whichText],
     font: 'Arial',
     units: undefined, 
-    pos: [0, 0], height: 0.07,  wrapWidth: undefined, ori: 0,
+    pos: [0, 0], height: 0.06,  wrapWidth: 1.5, ori: 0,
     color: new util.Color('white'),  opacity: 1,
     depth: 0.0 
   });
@@ -168,6 +206,8 @@ function experimentInit() {
   trialTargetLabels = [];
   trialLines = [];
   loopCounter = 0;
+  currentPart = 'A';
+  partLoopCounter = 0;
   trialMouse = new core.Mouse({
     win: psychoJS.window,
   });
@@ -198,6 +238,20 @@ function experimentInit() {
       return +(Math.round(num + ("e+" + n))  + ("e-" + n));
   }
   key_resp_2 = new core.Keyboard({psychoJS: psychoJS, clock: new util.Clock(), waitForStart: true});
+  
+  // Initialize components for Routine "endScreen"
+  endScreenClock = new util.Clock();
+  endText = new visual.TextStim({
+    win: psychoJS.window,
+    name: 'endText',
+    text: '',
+    font: 'Arial',
+    units: undefined,
+    pos: [0, 0], height: 0.06,  wrapWidth: 1.5, ori: 0,
+    color: new util.Color('white'),  opacity: 1,
+    depth: 0.0
+  });
+  key_resp_end = new core.Keyboard({psychoJS: psychoJS, clock: new util.Clock(), waitForStart: true});
   
   // Create some handy timers
   globalClock = new util.Clock();  // to track the time since experiment started
@@ -392,23 +446,24 @@ function instructionsRoutineEnd(trials) {
 }
 
 
-var trials;
 var currentLoop;
-function trialsLoopBegin(thisScheduler) {
-  // set up handler to look after randomisation of conditions etc
-  trials = new TrialHandler({
+function trialsPartALoopBegin(thisScheduler) {
+  // set up handler for Part A (2 trials, numbers only)
+  currentPart = 'A';
+  partLoopCounter = 0;
+  trialsPartA = new TrialHandler({
     psychoJS: psychoJS,
-    nReps: 5, method: TrialHandler.Method.SEQUENTIAL,
+    nReps: PART_A_TRIALS, method: TrialHandler.Method.SEQUENTIAL,
     extraInfo: expInfo, originPath: undefined,
     trialList: undefined,
-    seed: undefined, name: 'trials'
+    seed: undefined, name: 'trialsPartA'
   });
-  psychoJS.experiment.addLoop(trials); // add the loop to the experiment
-  currentLoop = trials;  // we're now the current loop
+  psychoJS.experiment.addLoop(trialsPartA);
+  currentLoop = trialsPartA;
 
   // Schedule all the trials in the trialList:
-  for (const thisTrial of trials) {
-    const snapshot = trials.getSnapshot();
+  for (const thisTrial of trialsPartA) {
+    const snapshot = trialsPartA.getSnapshot();
     thisScheduler.add(importConditions(snapshot));
     thisScheduler.add(trialRoundRoutineBegin(snapshot));
     thisScheduler.add(trialRoundRoutineEachFrame(snapshot));
@@ -426,8 +481,49 @@ function trialsLoopBegin(thisScheduler) {
 }
 
 
-function trialsLoopEnd() {
-  psychoJS.experiment.removeLoop(trials);
+function trialsPartALoopEnd() {
+  psychoJS.experiment.removeLoop(trialsPartA);
+
+  return Scheduler.Event.NEXT;
+}
+
+
+function trialsPartBLoopBegin(thisScheduler) {
+  // set up handler for Part B (3 trials, alternating numbers and letters)
+  currentPart = 'B';
+  partLoopCounter = 0;
+  trialsPartB = new TrialHandler({
+    psychoJS: psychoJS,
+    nReps: PART_B_TRIALS, method: TrialHandler.Method.SEQUENTIAL,
+    extraInfo: expInfo, originPath: undefined,
+    trialList: undefined,
+    seed: undefined, name: 'trialsPartB'
+  });
+  psychoJS.experiment.addLoop(trialsPartB);
+  currentLoop = trialsPartB;
+
+  // Schedule all the trials in the trialList:
+  for (const thisTrial of trialsPartB) {
+    const snapshot = trialsPartB.getSnapshot();
+    thisScheduler.add(importConditions(snapshot));
+    thisScheduler.add(trialRoundRoutineBegin(snapshot));
+    thisScheduler.add(trialRoundRoutineEachFrame(snapshot));
+    thisScheduler.add(trialRoundRoutineEnd(snapshot));
+    thisScheduler.add(trialRoutineBegin(snapshot));
+    thisScheduler.add(trialRoutineEachFrame(snapshot));
+    thisScheduler.add(trialRoutineEnd(snapshot));
+    thisScheduler.add(trialEndRoutineBegin(snapshot));
+    thisScheduler.add(trialEndRoutineEachFrame(snapshot));
+    thisScheduler.add(trialEndRoutineEnd(snapshot));
+    thisScheduler.add(endLoopIteration(thisScheduler, snapshot));
+  }
+
+  return Scheduler.Event.NEXT;
+}
+
+
+function trialsPartBLoopEnd() {
+  psychoJS.experiment.removeLoop(trialsPartB);
 
   return Scheduler.Event.NEXT;
 }
@@ -442,7 +538,7 @@ function trialRoundRoutineBegin(trials) {
     frameN = -1;
     routineTimer.add(0.500000);
     // update component parameters for each repeat
-    trialCount.setText((((loopCounter + 1) + ' / ') + 5));
+    trialCount.setText((partLoopCounter + 1) + ' / ' + (currentPart === 'A' ? PART_A_TRIALS : PART_B_TRIALS));
     // keep track of which components have finished
     trialRoundComponents = [];
     trialRoundComponents.push(trialCount);
@@ -541,6 +637,7 @@ function trialRoutineBegin(trials) {
     frameN = -1;
     // update component parameters for each repeat
     loopCounter += 1;
+    partLoopCounter += 1;
     trialStep = 0;
     
     // Keep track of steps for the 
@@ -645,10 +742,16 @@ function trialRoutineBegin(trials) {
                 depth: -1.0 
               })
         );
-        if (index % 2 == 0) {
-            trialTargetLabels[index].text = parseInt(index, 10)/2 + 1;
+        if (currentPart === 'A') {
+            // Part A: all targets numbered sequentially
+            trialTargetLabels[index].text = parseInt(index, 10) + 1;
         } else {
-            trialTargetLabels[index].text = alphaID.next();
+            // Part B: alternating numbers and letters
+            if (index % 2 == 0) {
+                trialTargetLabels[index].text = parseInt(index, 10)/2 + 1;
+            } else {
+                trialTargetLabels[index].text = alphaID.next();
+            }
         }
     }
     
@@ -905,7 +1008,7 @@ function trialEndRoutineBegin(trials) {
     // update component parameters for each repeat
     results.setText('Your time will be displayed here.');
     if ( loopCounter > 0 ) {
-        results.text = myText.trialList[1][whichText] + round(trialMouse.time[(trialMouse.time.length - 1)], 2).toString() + myText.trialList[2][whichText];
+        results.text = myText.trialList[3][whichText] + round(trialMouse.time[(trialMouse.time.length - 1)], 2).toString() + myText.trialList[4][whichText];
     }
     key_resp_2.keys = undefined;
     key_resp_2.rt = undefined;
@@ -1002,6 +1105,109 @@ function trialEndRoutineEnd(trials) {
       }
     }
     // the Routine "trialEnd" was not non-slip safe, so reset the non-slip timer
+    routineTimer.reset();
+    
+    return Scheduler.Event.NEXT;
+  };
+}
+
+
+var _key_resp_end_allKeys;
+var endScreenComponents;
+function endScreenRoutineBegin(trials) {
+  return function () {
+    //------Prepare to start Routine 'endScreen'-------
+    t = 0;
+    endScreenClock.reset(); // clock
+    frameN = -1;
+    // update component parameters for each repeat
+    endText.text = myText.trialList[5][whichText];
+    key_resp_end.keys = undefined;
+    key_resp_end.rt = undefined;
+    _key_resp_end_allKeys = [];
+    // keep track of which components have finished
+    endScreenComponents = [];
+    endScreenComponents.push(endText);
+    endScreenComponents.push(key_resp_end);
+    
+    for (const thisComponent of endScreenComponents)
+      if ('status' in thisComponent)
+        thisComponent.status = PsychoJS.Status.NOT_STARTED;
+    
+    return Scheduler.Event.NEXT;
+  };
+}
+
+
+function endScreenRoutineEachFrame(trials) {
+  return function () {
+    //------Loop for each frame of Routine 'endScreen'-------
+    let continueRoutine = true; // until we're told otherwise
+    // get current time
+    t = endScreenClock.getTime();
+    frameN = frameN + 1;// number of completed frames (so 0 is the first frame)
+    // update/draw components on each frame
+    
+    // *endText* updates
+    if (t >= 0.0 && endText.status === PsychoJS.Status.NOT_STARTED) {
+      endText.tStart = t;
+      endText.frameNStart = frameN;
+      endText.setAutoDraw(true);
+    }
+    
+    // *key_resp_end* updates
+    if (t >= 0.0 && key_resp_end.status === PsychoJS.Status.NOT_STARTED) {
+      key_resp_end.tStart = t;
+      key_resp_end.frameNStart = frameN;
+      psychoJS.window.callOnFlip(function() { key_resp_end.clock.reset(); });
+      psychoJS.window.callOnFlip(function() { key_resp_end.start(); });
+      psychoJS.window.callOnFlip(function() { key_resp_end.clearEvents(); });
+    }
+
+    if (key_resp_end.status === PsychoJS.Status.STARTED) {
+      let theseKeys = key_resp_end.getKeys({keyList: ['space'], waitRelease: false});
+      _key_resp_end_allKeys = _key_resp_end_allKeys.concat(theseKeys);
+      if (_key_resp_end_allKeys.length > 0) {
+        key_resp_end.keys = _key_resp_end_allKeys[_key_resp_end_allKeys.length - 1].name;
+        key_resp_end.rt = _key_resp_end_allKeys[_key_resp_end_allKeys.length - 1].rt;
+        continueRoutine = false;
+      }
+    }
+    
+    // check for quit (typically the Esc key)
+    if (psychoJS.experiment.experimentEnded || psychoJS.eventManager.getKeys({keyList:['escape']}).length > 0) {
+      return quitPsychoJS('The [Escape] key was pressed. Goodbye!', false);
+    }
+    
+    // check if the Routine should terminate
+    if (!continueRoutine) {
+      return Scheduler.Event.NEXT;
+    }
+    
+    continueRoutine = false;
+    for (const thisComponent of endScreenComponents)
+      if ('status' in thisComponent && thisComponent.status !== PsychoJS.Status.FINISHED) {
+        continueRoutine = true;
+        break;
+      }
+    
+    if (continueRoutine) {
+      return Scheduler.Event.FLIP_REPEAT;
+    } else {
+      return Scheduler.Event.NEXT;
+    }
+  };
+}
+
+
+function endScreenRoutineEnd(trials) {
+  return function () {
+    //------Ending Routine 'endScreen'-------
+    for (const thisComponent of endScreenComponents) {
+      if (typeof thisComponent.setAutoDraw === 'function') {
+        thisComponent.setAutoDraw(false);
+      }
+    }
     routineTimer.reset();
     
     return Scheduler.Event.NEXT;
