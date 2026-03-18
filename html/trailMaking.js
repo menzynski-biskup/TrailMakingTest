@@ -637,6 +637,7 @@ var PrevCursorTargetDistance;
 var data_stimulusXPos;
 var data_stimulusYPos;
 var data_stimLabels;
+var inter_time;
 var gotValidClick;
 var trialComponents;
 function trialRoutineBegin(trials) {
