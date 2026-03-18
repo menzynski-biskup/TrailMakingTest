@@ -28,9 +28,27 @@ let expName = 'trailMaking';  // from the Builder filename that created this scr
 // session: 1 or 2; time_of_day: 0 or 1
 let expInfo = {'participant': '', 'group': '', 'session': '', 'time_of_day': ''};
 
+// pre-populate expInfo from URL parameters (e.g. when launched via Qualtrics)
+const _urlParams = new URLSearchParams(window.location.search);
+const _setupFields = ['participant', 'group', 'session', 'time_of_day'];
+_setupFields.forEach(function(field) {
+  const value = _urlParams.get(field);
+  if (value !== null && value !== '') {
+    expInfo[field] = value;
+  }
+});
+
+// build dialog with only the fields not already supplied via URL
+const dlgInfo = {};
+_setupFields.forEach(function(field) {
+  if (expInfo[field] === '') {
+    dlgInfo[field] = '';
+  }
+});
+
 // schedule the experiment:
 psychoJS.schedule(psychoJS.gui.DlgFromDict({
-  dictionary: expInfo,
+  dictionary: dlgInfo,
   title: expName
 }));
 
@@ -100,6 +118,9 @@ function updateInfo() {
 
   // add info from the URL:
   util.addInfoFromUrl(expInfo);
+
+  // merge dialog-entered values (fields not provided via URL) into expInfo
+  Object.assign(expInfo, dlgInfo);
   
   return Scheduler.Event.NEXT;
 }
