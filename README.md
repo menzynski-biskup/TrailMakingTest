@@ -79,3 +79,11 @@ At the end of each trial the following variables are saved to the experiment dat
 | `trialMouse.time` | array of floats (s) | Timestamp of each mouse sample, relative to trial onset |
 
 The primary outcome measure is **`result`** (total trial completion time in seconds). The `inter_time` array can be used to compute per-target latencies, and the full mouse trajectory (`trialMouse.*`) supports detailed movement analysis.
+
+---
+
+## Credits & Attribution
+
+This implementation is based on a Trail Making Test project found on [Pavlovia GitLab](https://gitlab.pavlovia.org/). It is unclear who originally created that version first. If this repository is derived from your work, please feel free to contact me so I can add proper credits to you.
+
+The edits to the experiment code and all documentation in this repository were made by [menzynski-biskup](https://github.com/menzynski-biskup).
