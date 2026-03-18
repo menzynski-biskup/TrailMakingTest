@@ -25,7 +25,8 @@ psychoJS.openWindow({
 
 // store info about the experiment session:
 let expName = 'trailMaking';  // from the Builder filename that created this script
-let expInfo = {'participant': '', 'group': '', 'survey-url': '', 'language': 'EN', 'touchscreen': '0'};
+// session: 1 or 2; time_of_day: 0 or 1
+let expInfo = {'participant': '', 'group': '', 'session': '', 'time_of_day': ''};
 
 // schedule the experiment:
 psychoJS.schedule(psychoJS.gui.DlgFromDict({
@@ -158,20 +159,8 @@ function experimentInit() {
     trialList: textFile,
     seed: undefined, name: 'myText'});
   
-    if ((expInfo["touchscreen"] === "0")) {
-      whichText = (expInfo["language"].toString() + "_notouchscreen");
-      } else {
-        whichText = (expInfo["language"].toString() + "_touchscreen");
-      }
-  //define completed URL
-  if (expInfo['group'].indexOf("EDS_") >= 0) {
-      psychoJS.setRedirectUrls();
-      } else {
-              psychoJS.setRedirectUrls(
-              expInfo['survey-url']+"?id="+expInfo['participant']+"&group="+expInfo['group'], //completed URL
-              expInfo['survey-url']+"?id="+expInfo['participant']+"&group="+expInfo['group'] //incomplete URL
-              ); 
-              }
+    whichText = "EN_notouchscreen";
+    expInfo['touchscreen'] = '0';
   // Initialize components for Routine "instructions"
   instructionsClock = new util.Clock();
   instr_text = new visual.TextStim({
@@ -976,6 +965,9 @@ function trialRoutineEnd(trials) {
     trialTargetLabels.forEach( thisComponent => thisComponent.setAutoDraw(false) );
     trialLines.forEach( thisComponent => thisComponent.setAutoDraw(false) );
     
+    psychoJS.experiment.addData("trial", loopCounter); // 1=A1, 2=A2, 3=B1, 4=B2, 5=B3
+    psychoJS.experiment.addData("session", expInfo['session']);
+    psychoJS.experiment.addData("time_of_day", expInfo['time_of_day']);
     psychoJS.experiment.addData("cumulativetime", globalClock.getTime());
     psychoJS.experiment.addData( "stimulusX", data_stimulusXPos);
     psychoJS.experiment.addData( "stimulusY", data_stimulusYPos);
