@@ -846,6 +846,7 @@ function trialRoutineBegin(trials) {
     trialMouse.midButton = [];
     trialMouse.rightButton = [];
     trialMouse.time = [];
+    inter_time = [];
     gotValidClick = false; // until a click is received
     trialMouse.mouseClock.reset();
     // keep track of which components have finished
@@ -899,6 +900,7 @@ function trialRoutineEachFrame(trials) {
             trialTargets[trialStep].opacity = 0;
             trialTargetLabels[trialStep].opacity = 0.25;
             trialLines[trialStep].opacity = 1;
+            inter_time.push(trialMouse.mouseClock.getTime());
             trialStep += 1;
             console.log(trialStep);
             steps.push(trialStep);
@@ -990,6 +992,8 @@ function trialRoutineEnd(trials) {
     psychoJS.experiment.addData("session", expInfo['session']);
     psychoJS.experiment.addData("time_of_day", expInfo['time_of_day']);
     psychoJS.experiment.addData("cumulativetime", globalClock.getTime());
+    psychoJS.experiment.addData("result", trialMouse.time.length > 0 ? trialMouse.time[trialMouse.time.length - 1] : null);
+    psychoJS.experiment.addData("inter_time", inter_time);
     psychoJS.experiment.addData( "stimulusX", data_stimulusXPos);
     psychoJS.experiment.addData( "stimulusY", data_stimulusYPos);
     psychoJS.experiment.addData( "stimulusSymbol", data_stimLabels);
